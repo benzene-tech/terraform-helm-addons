@@ -6,7 +6,7 @@ variable "argo_cd" {
     namespace     = optional(string, null)
     values        = optional(list(string), [])
     set           = optional(map(string), {})
-    set_list      = optional(map(list(any)), {})
+    set_list      = optional(map(list(string)), {})
     set_sensitive = optional(map(string), {})
   })
   default = null
@@ -20,7 +20,7 @@ variable "cert_manager" {
     namespace     = optional(string, null)
     values        = optional(list(string), [])
     set           = optional(map(string), {})
-    set_list      = optional(map(list(any)), {})
+    set_list      = optional(map(list(string)), {})
     set_sensitive = optional(map(string), {})
   })
   default = null
@@ -34,7 +34,7 @@ variable "external_dns" {
     namespace     = optional(string, null)
     values        = optional(list(string), [])
     set           = optional(map(string), {})
-    set_list      = optional(map(list(any)), {})
+    set_list      = optional(map(list(string)), {})
     set_sensitive = optional(map(string), {})
   })
   default = null
@@ -48,7 +48,7 @@ variable "ingress_nginx" {
     namespace     = optional(string, null)
     values        = optional(list(string), [])
     set           = optional(map(string), {})
-    set_list      = optional(map(list(any)), {})
+    set_list      = optional(map(list(string)), {})
     set_sensitive = optional(map(string), {})
   })
   default = null
@@ -62,8 +62,9 @@ variable "karpenter" {
     namespace     = optional(string, null)
     values        = optional(list(string), [])
     set           = optional(map(string), {})
-    set_list      = optional(map(list(any)), {})
+    set_list      = optional(map(list(string)), {})
     set_sensitive = optional(map(string), {})
+    manifests     = optional(map(string), {})
   })
   default = null
 }

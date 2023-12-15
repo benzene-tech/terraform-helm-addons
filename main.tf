@@ -39,6 +39,30 @@ resource "helm_release" "karpenter" {
   }
 }
 
+resource "terraform_data" "this" {
+  for_each = var.karpenter.manifests
+
+  input            = each.value
+  triggers_replace = filesha256(each.value)
+
+  provisioner "local-exec" {
+    command = "kubectl apply -f $manifest"
+    environment = {
+      manifest = self.output
+    }
+  }
+
+  provisioner "local-exec" {
+    command = "kubectl delete -f $manifest"
+    environment = {
+      manifest = self.output
+    }
+    when = destroy
+  }
+
+  depends_on = [helm_release.karpenter]
+}
+
 
 ### Cert manager
 resource "helm_release" "cert_manager" {
@@ -212,5 +236,5 @@ resource "helm_release" "argo_cd" {
     }
   }
 
-  depends_on = [helm_release.ingress_nginx]
+  depends_on = [helm_release.cert_manager, helm_release.ingress_nginx]
 }
