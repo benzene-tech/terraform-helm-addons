@@ -8,6 +8,7 @@ resource "helm_release" "karpenter" {
   version          = var.karpenter.version
   namespace        = var.karpenter.namespace
   create_namespace = true
+  force_update     = var.karpenter.force_update
 
   values = var.karpenter.values
 
@@ -50,6 +51,7 @@ resource "helm_release" "cert_manager" {
   version          = var.cert_manager.version
   namespace        = var.cert_manager.namespace
   create_namespace = true
+  force_update     = var.cert_manager.force_update
 
   values = var.cert_manager.values
 
@@ -94,6 +96,7 @@ resource "helm_release" "external_dns" {
   version          = var.external_dns.version
   namespace        = var.external_dns.namespace
   create_namespace = true
+  force_update     = var.external_dns.force_update
 
   values = var.external_dns.values
 
@@ -129,20 +132,21 @@ resource "helm_release" "external_dns" {
 
 
 ### NGINX Ingress
-resource "helm_release" "ingress_nginx" {
-  count = var.ingress_nginx != null ? 1 : 0
+resource "helm_release" "nginx_ingress" {
+  count = var.nginx_ingress != null ? 1 : 0
 
-  name             = var.ingress_nginx.name
-  repository       = local.ingress_nginx.repository
-  chart            = local.ingress_nginx.chart
-  version          = var.ingress_nginx.version
-  namespace        = var.ingress_nginx.namespace
+  name             = var.nginx_ingress.name
+  repository       = local.nginx_ingress.repository
+  chart            = local.nginx_ingress.chart
+  version          = var.nginx_ingress.version
+  namespace        = var.nginx_ingress.namespace
   create_namespace = true
+  force_update     = var.nginx_ingress.force_update
 
-  values = var.ingress_nginx.values
+  values = var.nginx_ingress.values
 
   dynamic "set" {
-    for_each = var.ingress_nginx.set
+    for_each = var.nginx_ingress.set
 
     content {
       name  = set.key
@@ -151,7 +155,7 @@ resource "helm_release" "ingress_nginx" {
   }
 
   dynamic "set_list" {
-    for_each = var.ingress_nginx.set_list
+    for_each = var.nginx_ingress.set_list
 
     content {
       name  = set_list.key
@@ -160,7 +164,7 @@ resource "helm_release" "ingress_nginx" {
   }
 
   dynamic "set_sensitive" {
-    for_each = var.ingress_nginx.set_sensitive
+    for_each = var.nginx_ingress.set_sensitive
 
     content {
       name  = set_sensitive.key
@@ -182,6 +186,7 @@ resource "helm_release" "argo_cd" {
   version          = var.argo_cd.version
   namespace        = var.argo_cd.namespace
   create_namespace = true
+  force_update     = var.argo_cd.force_update
 
   values = var.argo_cd.values
 
@@ -212,5 +217,5 @@ resource "helm_release" "argo_cd" {
     }
   }
 
-  depends_on = [helm_release.cert_manager, helm_release.ingress_nginx]
+  depends_on = [helm_release.cert_manager, helm_release.nginx_ingress]
 }

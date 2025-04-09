@@ -8,6 +8,7 @@ variable "argo_cd" {
     set           = optional(map(string), {})
     set_list      = optional(map(list(string)), {})
     set_sensitive = optional(map(string), {})
+    force_update  = optional(bool, false)
   })
   default = null
 }
@@ -22,6 +23,7 @@ variable "cert_manager" {
     set           = optional(map(string), {})
     set_list      = optional(map(list(string)), {})
     set_sensitive = optional(map(string), {})
+    force_update  = optional(bool, false)
   })
   default = null
 }
@@ -36,11 +38,12 @@ variable "external_dns" {
     set           = optional(map(string), {})
     set_list      = optional(map(list(string)), {})
     set_sensitive = optional(map(string), {})
+    force_update  = optional(bool, false)
   })
   default = null
 }
 
-variable "ingress_nginx" {
+variable "nginx_ingress" {
   description = "NGINX Ingress configs"
   type = object({
     name          = optional(string, "ingress-nginx")
@@ -50,6 +53,7 @@ variable "ingress_nginx" {
     set           = optional(map(string), {})
     set_list      = optional(map(list(string)), {})
     set_sensitive = optional(map(string), {})
+    force_update  = optional(bool, false)
   })
   default = null
 }
@@ -64,6 +68,7 @@ variable "karpenter" {
     set           = optional(map(string), {})
     set_list      = optional(map(list(string)), {})
     set_sensitive = optional(map(string), {})
+    force_update  = optional(bool, false)
   })
   default = null
 }

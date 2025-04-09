@@ -14,7 +14,7 @@ locals {
     chart      = "external-dns"
   }
 
-  ingress_nginx = {
+  nginx_ingress = {
     repository = "https://kubernetes.github.io/ingress-nginx"
     chart      = "ingress-nginx"
   }
