@@ -14,9 +14,12 @@ locals {
     chart      = "external-dns"
   }
 
-  nginx_ingress = {
-    repository = "https://kubernetes.github.io/ingress-nginx"
-    chart      = "ingress-nginx"
+  istio = {
+    repository = "https://istio-release.storage.googleapis.com/charts"
+    chart = {
+      sidecar = "istiod"
+      ambient = "ambient"
+    }
   }
 
   karpenter = {

@@ -1,6 +1,6 @@
 ### Karpenter
 resource "helm_release" "karpenter" {
-  count = var.karpenter != null ? 1 : 0
+  count = var.karpenter.enable ? 1 : 0
 
   name             = var.karpenter.name
   repository       = local.karpenter.repository
@@ -41,9 +41,101 @@ resource "helm_release" "karpenter" {
 }
 
 
+### Istio
+resource "helm_release" "istio" {
+  count = var.istio.enable ? 1 : 0
+
+  name             = var.istio.name
+  repository       = local.istio.repository
+  chart            = local.istio.chart[var.istio.mode]
+  version          = var.istio.version
+  namespace        = var.istio.namespace
+  create_namespace = true
+  force_update     = var.istio.force_update
+
+  values = var.istio.values
+
+  dynamic "set" {
+    for_each = var.istio.mode == "ambient" ? ["base.", "istiod.", "ztunnel."] : [""]
+
+    content {
+      name  = "${set.value}global.istioNamespace"
+      value = var.istio.namespace
+    }
+  }
+
+  dynamic "set" {
+    for_each = var.istio.mode == "sidecar" ? [true] : []
+
+    content {
+      name  = "pilot.cni.enabled"
+      value = set.value
+    }
+  }
+
+  dynamic "set" {
+    for_each = var.istio.set
+
+    content {
+      name  = set.key
+      value = set.value
+    }
+  }
+
+  dynamic "set_list" {
+    for_each = var.istio.set_list
+
+    content {
+      name  = set_list.key
+      value = set_list.value
+    }
+  }
+
+  dynamic "set_sensitive" {
+    for_each = var.istio.set_sensitive
+
+    content {
+      name  = set_sensitive.key
+      value = set_sensitive.value
+    }
+  }
+
+  depends_on = [helm_release.istio-cni]
+}
+
+resource "helm_release" "istio-base" {
+  count = var.istio.enable && var.istio.mode == "sidecar" ? 1 : 0
+
+  name             = "${var.istio.name}-base"
+  repository       = local.istio.repository
+  chart            = "base"
+  namespace        = var.istio.namespace
+  create_namespace = true
+
+  set {
+    name  = "global.istioNamespace"
+    value = var.istio.namespace
+  }
+
+  depends_on = [helm_release.karpenter]
+}
+
+resource "helm_release" "istio-cni" {
+  count = var.istio.enable && var.istio.mode == "sidecar" ? 1 : 0
+
+  name             = "${var.istio.name}-cni"
+  repository       = local.istio.repository
+  chart            = "cni"
+  namespace        = var.istio.namespace
+  create_namespace = true
+
+  depends_on = [helm_release.istio-base]
+}
+
+
 ### Cert manager
 resource "helm_release" "cert_manager" {
-  count = var.cert_manager != null ? 1 : 0
+  count = var.cert_manager.enable ? 1 : 0
 
   name             = var.cert_manager.name
   repository       = local.cert_manager.repository
@@ -88,7 +180,7 @@ resource "helm_release" "cert_manager" {
 
 ### External DNS
 resource "helm_release" "external_dns" {
-  count = var.external_dns != null ? 1 : 0
+  count = var.external_dns.enable ? 1 : 0
 
   name             = var.external_dns.name
   repository       = local.external_dns.repository
@@ -131,54 +223,9 @@ resource "helm_release" "external_dns" {
 }
 
 
-### NGINX Ingress
-resource "helm_release" "nginx_ingress" {
-  count = var.nginx_ingress != null ? 1 : 0
-
-  name             = var.nginx_ingress.name
-  repository       = local.nginx_ingress.repository
-  chart            = local.nginx_ingress.chart
-  version          = var.nginx_ingress.version
-  namespace        = var.nginx_ingress.namespace
-  create_namespace = true
-  force_update     = var.nginx_ingress.force_update
-
-  values = var.nginx_ingress.values
-
-  dynamic "set" {
-    for_each = var.nginx_ingress.set
-
-    content {
-      name  = set.key
-      value = set.value
-    }
-  }
-
-  dynamic "set_list" {
-    for_each = var.nginx_ingress.set_list
-
-    content {
-      name  = set_list.key
-      value = set_list.value
-    }
-  }
-
-  dynamic "set_sensitive" {
-    for_each = var.nginx_ingress.set_sensitive
-
-    content {
-      name  = set_sensitive.key
-      value = set_sensitive.value
-    }
-  }
-
-  depends_on = [helm_release.karpenter]
-}
-
-
 ### Argo CD
 resource "helm_release" "argo_cd" {
-  count = var.argo_cd != null ? 1 : 0
+  count = var.argo_cd.enable ? 1 : 0
 
   name             = var.argo_cd.name
   repository       = local.argo_cd.repository
@@ -217,5 +264,5 @@ resource "helm_release" "argo_cd" {
     }
   }
 
-  depends_on = [helm_release.cert_manager, helm_release.nginx_ingress]
+  depends_on = [helm_release.cert_manager, helm_release.external_dns, helm_release.istio]
 }
