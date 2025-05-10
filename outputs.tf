@@ -13,9 +13,9 @@ output "external_dns" {
   value       = one(helm_release.external_dns[*])
 }
 
-output "ingress_nginx" {
-  description = "NGINX Ingress configs"
-  value       = one(helm_release.ingress_nginx[*])
+output "istio" {
+  description = "Istio configs"
+  value       = one(helm_release.istio[*])
 }
 
 output "karpenter" {
